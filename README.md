@@ -36,4 +36,14 @@ The bot gives data about:
   - This command will show you the incidence history
   - Be sure to add a number as argument for the given days
 
+🖼️ Pictures:
+
+1. Corona Command
+
+![CoronaCommand Image](./docs/Screenshot_13.png)
+
+2. Daily updates
+
+![DailyUpdates Image](./docs/Screenshot_14.png)
+
 
