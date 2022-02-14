@@ -46,4 +46,9 @@ The bot gives data about:
 
 ![DailyUpdates Image](./docs/Screenshot_14.png)
 
+3. Incidence Command
+
+![Incidence Image](./docs/Screenshot_15.png)
+
+
 
