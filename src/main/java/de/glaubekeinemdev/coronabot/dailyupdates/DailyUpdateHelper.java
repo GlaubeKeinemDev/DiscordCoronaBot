@@ -45,12 +45,8 @@ public class DailyUpdateHelper {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             final String time = dateFormat.format(new Date());
 
-            System.out.println("0");
-
             jda.getGuilds().forEach(eachGuild -> {
                 GuildData guildData = backendHandler.getGuildData(eachGuild.getId());
-
-                System.out.println("1");
 
                 if(guildData == null) {
                     guildData = new GuildData(eachGuild.getId(), "!", new ArrayList<>(), new DailyUpdateInformation());
@@ -58,17 +54,11 @@ public class DailyUpdateHelper {
                     backendHandler.updateGuildData(eachGuild.getId(), guildData);
                 }
 
-                System.out.println("2");
-
                 if(!guildData.getDailyUpdateInformation().isEnabled())
                     return;
 
-                System.out.println("3");
-
                 if(!availableTimes.contains(guildData.getDailyUpdateInformation().getSendTime()))
                     return;
-
-                System.out.println("4");
 
                 try {
                     Long.parseLong(guildData.getDailyUpdateInformation().getTextChannelId());
@@ -77,17 +67,12 @@ public class DailyUpdateHelper {
                     return;
                 }
 
-                System.out.println("5");
-
                 final TextChannel textChannel = eachGuild.getTextChannelById(guildData.getDailyUpdateInformation().getTextChannelId());
 
                 if(textChannel == null)
                     return;
 
-                System.out.println("6");
-
                 if (time.equals(guildData.getDailyUpdateInformation().getSendTime())) {
-                    System.out.println("7");
                     sendUpdate(textChannel);
                 }
             });

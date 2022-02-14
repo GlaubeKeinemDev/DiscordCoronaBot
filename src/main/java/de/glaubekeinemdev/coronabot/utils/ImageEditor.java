@@ -194,12 +194,9 @@ public class ImageEditor {
                 finalImage = new LookupOp(new ColorMapper(index.getDecodedColor(), colorThree), null).filter(finalImage, null);
             }
             if (index.getMin() >= 200 && index.getMax() <= 500) {
-                if(index.getMin() == 350 && index.getMax() == 500) {
                     final Color effectiveColor = Color.decode("#5e189b");
                     finalImage = new LookupOp(new ColorMapper(effectiveColor, colorFour), null).filter(finalImage, null);
-                } else {
                     finalImage = new LookupOp(new ColorMapper(index.getDecodedColor(), colorFour), null).filter(finalImage, null);
-                }
             }
             if (index.getMin() == 500 && index.getMax() == 1000) {
                 finalImage = new LookupOp(new ColorMapper(index.getDecodedColor(), colorFive), null).filter(finalImage, null);
