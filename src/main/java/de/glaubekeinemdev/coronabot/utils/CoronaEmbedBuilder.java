@@ -1,16 +1,20 @@
 package de.glaubekeinemdev.coronabot.utils;
 
-import de.glaubekeinemdev.discordutilities.utils.AbstractEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class CoronaEmbedBuilder extends AbstractEmbedBuilder {
+public class CoronaEmbedBuilder {
+
+    private final EmbedBuilder embedBuilder;
 
     public CoronaEmbedBuilder() {
+        this.embedBuilder = new EmbedBuilder();
+        embedBuilder.setColor(Color.decode("#900C3F"));
     }
 
     public CoronaEmbedBuilder(final String title) {
@@ -19,8 +23,7 @@ public class CoronaEmbedBuilder extends AbstractEmbedBuilder {
         embedBuilder.setColor(Color.decode("#900C3F"));
     }
 
-    @Override
-    public AbstractEmbedBuilder setTitle(String s) {
+    public CoronaEmbedBuilder setTitle(String s) {
         this.embedBuilder.setTitle(s);
         return this;
     }
@@ -30,41 +33,49 @@ public class CoronaEmbedBuilder extends AbstractEmbedBuilder {
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder setDescription(String s) {
+    public CoronaEmbedBuilder setDescription(String s) {
         embedBuilder.setDescription(s);
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder setDefaultFooter(final Member member) {
+    public CoronaEmbedBuilder setDefaultFooter(final Member member) {
         this.embedBuilder.setFooter(member.getUser().getAsTag() + " | " + getCurrentDate());
         this.embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder setImageUrl(final String url) {
+    public CoronaEmbedBuilder setAuthor(final String name, final String url, final String iconUrl) {
+        this.embedBuilder.setAuthor(name, url, iconUrl);
+        return this;
+    }
+
+    public CoronaEmbedBuilder setImageUrl(final String url) {
         this.embedBuilder.setImage(url);
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder addField(final String name, final String value) {
+    public CoronaEmbedBuilder addField(final String name, final String value) {
         this.embedBuilder.addField(name, value, false);
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder setColor(final Color color) {
+    public CoronaEmbedBuilder addField(final String name, final String value, final boolean inline) {
+        this.embedBuilder.addField(name, value, inline);
+        return this;
+    }
+
+    public CoronaEmbedBuilder setColor(final Color color) {
         this.embedBuilder.setColor(color);
         return this;
     }
 
-    @Override
-    public AbstractEmbedBuilder setThumbnail(final String url) {
+    public CoronaEmbedBuilder setThumbnail(final String url) {
         this.embedBuilder.setThumbnail(url);
         return this;
+    }
+
+    public MessageEmbed build() {
+        return this.embedBuilder.build();
     }
 
     public String getCurrentDate() {

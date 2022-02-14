@@ -1,5 +1,7 @@
 package de.glaubekeinemdev.coronabot.utils.objects;
 
+import java.awt.*;
+
 public class MapLegendInformation {
 
     private final Integer min;
@@ -22,5 +24,9 @@ public class MapLegendInformation {
 
     public String getColor() {
         return color;
+    }
+
+    public Color getDecodedColor() {
+        return Color.decode(this.color);
     }
 }

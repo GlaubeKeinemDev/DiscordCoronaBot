@@ -2,6 +2,7 @@ package de.glaubekeinemdev.coronabot.configuration;
 
 import com.google.gson.GsonBuilder;
 import de.glaubekeinemdev.coronabot.dailyupdates.DailyUpdateInformation;
+import de.glaubekeinemdev.coronabot.database.DataBaseCredential;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,14 +12,13 @@ public class Configuration {
 
     private final String botToken;
     private final String restHost;
-    private final String commandInvoke;
-    private final DailyUpdateInformation dailyUpdateInformation;
+
+    private final DataBaseCredential dataBaseCredential;
 
     public Configuration() {
         this.botToken = "INSERT BOTTOKEN HERE";
         this.restHost = "https://api.corona-zahlen.org/";
-        this.commandInvoke = "!";
-        this.dailyUpdateInformation = new DailyUpdateInformation();
+        this.dataBaseCredential = DataBaseCredential.getDefault();
     }
 
     public void save(final File file) throws IOException {
@@ -28,19 +28,15 @@ public class Configuration {
         fileWriter.close();
     }
 
+    public DataBaseCredential getDataBaseCredential() {
+        return dataBaseCredential;
+    }
+
     public String getBotToken() {
         return botToken;
     }
 
     public String getRestHost() {
         return restHost;
-    }
-
-    public String getCommandInvoke() {
-        return commandInvoke;
-    }
-
-    public DailyUpdateInformation getDailyUpdateInformation() {
-        return dailyUpdateInformation;
     }
 }

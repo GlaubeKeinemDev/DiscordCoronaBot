@@ -1,16 +1,18 @@
 package de.glaubekeinemdev.coronabot.dailyupdates;
 
+import de.glaubekeinemdev.coronabot.database.BackendHandler;
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
+import de.glaubekeinemdev.coronabot.utils.GuildData;
 import de.glaubekeinemdev.coronabot.utils.objects.CoronaInformation;
 import de.glaubekeinemdev.coronabot.utils.objects.VaccinationInformation;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -25,71 +27,74 @@ public class DailyUpdateHelper {
             "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24");
 
     private final ScheduledExecutorService scheduledExecutorService;
-    private final DailyUpdateInformation dailyUpdateInformation;
     private final CoronaAPI coronaAPI;
+    private final BackendHandler backendHandler;
 
     private final JDA jda;
 
-    private TextChannel textChannel;
-
-    public DailyUpdateHelper(JDA jda, ScheduledExecutorService scheduledExecutorService, DailyUpdateInformation dailyUpdateInformation, CoronaAPI coronaAPI) {
+    public DailyUpdateHelper(JDA jda, ScheduledExecutorService scheduledExecutorService, CoronaAPI coronaAPI, BackendHandler backendHandler) {
         this.jda = jda;
         this.scheduledExecutorService = scheduledExecutorService;
-        this.dailyUpdateInformation = dailyUpdateInformation;
         this.coronaAPI = coronaAPI;
+        this.backendHandler = backendHandler;
+
+        start();
     }
 
     public void start() {
-        if(!dailyUpdateInformation.isEnabled()) {
-            System.out.println("Daily updates is disabled it will not be used");
-            return;
-        }
-        if(!availableTimes.contains(dailyUpdateInformation.getSendTime())) {
-            System.out.println("Daily updates will be disbaled because the sendTime is not valid use number from "
-                    + availableTimes.get(0) + " and " + (availableTimes.get(availableTimes.size() - 1)));
-            return;
-        }
-        try {
-            Long.parseLong(dailyUpdateInformation.getGuildId());
-        } catch (NumberFormatException e) {
-            System.out.println("Daily updates will be disabled because entered guild id is not valid");
-            return;
-        }
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            final String time = dateFormat.format(new Date());
 
-        final Guild guild = jda.getGuildById(dailyUpdateInformation.getGuildId());
+            System.out.println("0");
 
-        if(guild == null) {
-            System.out.println("Daily updates will be disabled because entered guild id is not valid");
-            return;
-        }
+            jda.getGuilds().forEach(eachGuild -> {
+                GuildData guildData = backendHandler.getGuildData(eachGuild.getId());
 
-        try {
-            Long.parseLong(dailyUpdateInformation.getTextChannelId());
-        } catch (NumberFormatException e) {
-            System.out.println("Daily updates will be disabled because entered textchannel id is not valid");
-            return;
-        }
+                System.out.println("1");
 
-        textChannel = guild.getTextChannelById(dailyUpdateInformation.getTextChannelId());
+                if(guildData == null) {
+                    guildData = new GuildData(eachGuild.getId(), "!", new ArrayList<>(), new DailyUpdateInformation());
 
-        if(textChannel == null) {
-            System.out.println("Daily updates will be disabled because entered textchannel id is not valid");
-            return;
-        }
-
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                final String time = dateFormat.format(new Date());
-
-                if (time.equals(dailyUpdateInformation.getSendTime())) {
-                    sendUpdate();
+                    backendHandler.updateGuildData(eachGuild.getId(), guildData);
                 }
-            }
-        }, 0, 1, TimeUnit.HOURS);
+
+                System.out.println("2");
+
+                if(!guildData.getDailyUpdateInformation().isEnabled())
+                    return;
+
+                System.out.println("3");
+
+                if(!availableTimes.contains(guildData.getDailyUpdateInformation().getSendTime()))
+                    return;
+
+                System.out.println("4");
+
+                try {
+                    Long.parseLong(guildData.getDailyUpdateInformation().getTextChannelId());
+                } catch (NumberFormatException e) {
+                    System.out.println("Daily updates will be disabled because entered textchannel id is not valid | Guild: " + guildData.getId());
+                    return;
+                }
+
+                System.out.println("5");
+
+                final TextChannel textChannel = eachGuild.getTextChannelById(guildData.getDailyUpdateInformation().getTextChannelId());
+
+                if(textChannel == null)
+                    return;
+
+                System.out.println("6");
+
+                if (time.equals(guildData.getDailyUpdateInformation().getSendTime())) {
+                    System.out.println("7");
+                    sendUpdate(textChannel);
+                }
+            });
+        }, 5, 1, TimeUnit.HOURS);
     }
 
-    private void sendUpdate() {
+    private void sendUpdate(final TextChannel textChannel) {
         final VaccinationInformation vaccinationInformation = coronaAPI.getVaccinationInformation();
         final CoronaInformation coronaInformation = coronaAPI.getInformation();
         final CoronaEmbedBuilder botEmbedBuilder = new CoronaEmbedBuilder("Coronazahlen am " + getSimpleDate());
@@ -115,10 +120,14 @@ public class DailyUpdateHelper {
         if (file != null) {
             botEmbedBuilder.setThumbnail("attachment://" + file.getName());
 
-            textChannel.sendFile(file, file.getName()).embed(botEmbedBuilder.build()).queue();
+            textChannel.sendFile(file, file.getName()).setEmbeds(botEmbedBuilder.build()).queue();
         } else {
-            textChannel.sendMessage(botEmbedBuilder.build()).queue();
+            textChannel.sendMessageEmbeds(botEmbedBuilder.build()).queue();
         }
+    }
+
+    public List<String> getAvailableTimes() {
+        return availableTimes;
     }
 
     private String getSimpleDate() {

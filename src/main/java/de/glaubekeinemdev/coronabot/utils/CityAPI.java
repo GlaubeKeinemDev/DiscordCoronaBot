@@ -8,6 +8,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CityAPI {
@@ -86,9 +87,13 @@ public class CityAPI {
         }
 
         public String getCode(final String key) {
-            if(!cache.containsKey(key))
+            if(!cache.containsKey(key)) {
+                for (Map.Entry<String, String> entry : cache.entrySet()) {
+                    if (entry.getKey().equalsIgnoreCase(key))
+                        return entry.getValue();
+                }
                 return null;
-
+            }
             return cache.get(key);
         }
 

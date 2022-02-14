@@ -1,4 +1,4 @@
-package de.glaubekeinemdev.coronabot.commands;
+package de.glaubekeinemdev.coronabot.commands.user;
 
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
@@ -7,7 +7,6 @@ import de.glaubekeinemdev.coronabot.utils.objects.CoronaInformation;
 import de.glaubekeinemdev.coronabot.utils.objects.IntensiveBedInformation;
 import de.glaubekeinemdev.coronabot.utils.objects.TestInformation;
 import de.glaubekeinemdev.coronabot.utils.objects.VaccinationInformation;
-import de.glaubekeinemdev.discordutilities.commands.core.Command;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -17,41 +16,27 @@ import org.decimal4j.util.DoubleRounder;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-public class CoronaCommand extends Command {
+public class CoronaCommand {
 
     private final CoronaAPI coronaAPI;
 
     private final DecimalFormat decimalFormat = new DecimalFormat("##,###");
 
-    public CoronaCommand(String[] neededPermissionRoles, List<String> availableChannels, CoronaAPI coronaAPI) {
-        super(neededPermissionRoles, availableChannels);
-
+    public CoronaCommand(CoronaAPI coronaAPI) {
         this.coronaAPI = coronaAPI;
-
-        setArguments("<Stadt/Bundesland>");
     }
 
-    @Override
-    public List<String> alias() {
-        return new ArrayList<>();
-    }
+    public void execute(final Message message) {
+        String[] args = new String[]{};
+        String[] messageSplitted = message.getContentRaw().split(" ");
 
-    @Override
-    public String commandName() {
-        return "corona";
-    }
+        if(!message.getContentRaw().replace(messageSplitted[0], "").isEmpty()) {
+            final String line = message.getContentRaw();
+            args = line.replace(messageSplitted[0], "").substring(1).split(" ");
+        }
 
-    @Override
-    public String description() {
-        return "Gibt dir Auskunft über aktuelle Coronazahlen";
-    }
-
-    @Override
-    public void execute(String[] args, String s, Member member, TextChannel textChannel, Message message) {
         if (args.length == 0) {
             final CoronaInformation coronaInformation = coronaAPI.getInformation();
             final VaccinationInformation vaccinationInformation = coronaAPI.getVaccinationInformation();
@@ -59,11 +44,11 @@ public class CoronaCommand extends Command {
             final IntensiveBedInformation intensiveBedInformation = coronaAPI.getIntensiveBedInformation();
 
             if (coronaInformation == null || vaccinationInformation == null || testInformation == null) {
-                textChannel.sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(coronaInformation, vaccinationInformation, testInformation, intensiveBedInformation, textChannel, member).queue();
+            getMessage(coronaInformation, vaccinationInformation, testInformation, intensiveBedInformation, message.getTextChannel(), message.getMember()).queue();
             return;
         }
 
@@ -80,22 +65,22 @@ public class CoronaCommand extends Command {
             final CoronaInformation coronaInformation = coronaAPI.getStateInformation(stringBuilder.toString());
             final VaccinationInformation vaccinationInformation = coronaAPI.getStateVaccinationInformation(stringBuilder.toString());
             if (coronaInformation == null || vaccinationInformation == null) {
-                textChannel.sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(coronaInformation, vaccinationInformation, null, null, textChannel, member).queue();
+            getMessage(coronaInformation, vaccinationInformation, null, null, message.getTextChannel(), message.getMember()).queue();
             return;
         }
 
         CoronaInformation coronaInformation = coronaAPI.getCityInformation(stringBuilder.toString());
 
         if (coronaInformation == null) {
-            textChannel.sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder + "` gefunden").queue();
+            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder + "` gefunden").queue();
             return;
         }
 
-        getMessage(coronaInformation, null, null, null, textChannel, member).queue();
+        getMessage(coronaInformation, null, null, null, message.getTextChannel(), message.getMember()).queue();
     }
 
 
@@ -179,10 +164,10 @@ public class CoronaCommand extends Command {
         botEmbedBuilder.setDefaultFooter(member);
 
         if (file == null) {
-            return textChannel.sendMessage(botEmbedBuilder.build());
+            return textChannel.sendMessageEmbeds(botEmbedBuilder.build());
         } else {
             botEmbedBuilder.setThumbnail("attachment://" + file.getName());
-            return textChannel.sendFile(file, file.getName()).embed(botEmbedBuilder.build());
+            return textChannel.sendFile(file, file.getName()).setEmbeds(botEmbedBuilder.build());
         }
     }
 

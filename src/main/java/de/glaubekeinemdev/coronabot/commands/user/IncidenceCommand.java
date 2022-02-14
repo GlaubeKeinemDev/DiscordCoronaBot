@@ -1,10 +1,9 @@
-package de.glaubekeinemdev.coronabot.commands;
+package de.glaubekeinemdev.coronabot.commands.user;
 
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
 import de.glaubekeinemdev.coronabot.utils.States;
 import de.glaubekeinemdev.coronabot.utils.objects.IncidenceInformation;
-import de.glaubekeinemdev.discordutilities.commands.core.Command;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -12,49 +11,35 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
-public class IncidenceCommand extends Command {
+public class IncidenceCommand {
 
     private final CoronaAPI coronaAPI;
 
     private final DecimalFormat decimalFormat = new DecimalFormat("##,###");
 
-    public IncidenceCommand(String[] neededPermissionRoles, List<String> availableChannels, final CoronaAPI coronaAPI) {
-        super(neededPermissionRoles, availableChannels);
-
+    public IncidenceCommand(CoronaAPI coronaAPI) {
         this.coronaAPI = coronaAPI;
-
-        setArguments("<Stadt/Landkreis/Bundesland>");
     }
 
-    @Override
-    public List<String> alias() {
-        return new ArrayList<>();
-    }
+    public void execute(final Message message) {
+        String[] args = new String[]{};
+        String[] messageSplitted = message.getContentRaw().split(" ");
 
-    @Override
-    public String commandName() {
-        return "inzidenz";
-    }
+        if(!message.getContentRaw().replace(messageSplitted[0], "").isEmpty()) {
+            final String line = message.getContentRaw();
+            args = line.replace(messageSplitted[0], "").substring(1).split(" ");
+        }
 
-    @Override
-    public String description() {
-        return "Zeigt den Corona Inzidenzverlauf von Deutschland/Stadt/Landkreis/Bundesland an";
-    }
-
-    @Override
-    public void execute(String[] args, String s, Member member, TextChannel textChannel, Message message) {
         if(args.length == 0) {
             final IncidenceInformation incidenceInformation = coronaAPI.getIncidenceInformation();
 
             if(incidenceInformation == null) {
-                textChannel.sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(incidenceInformation, textChannel, member).queue();
+            getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
             return;
         }
 
@@ -71,22 +56,22 @@ public class IncidenceCommand extends Command {
             IncidenceInformation incidenceInformation = coronaAPI.getIncidenceStateInformation(stringBuilder.toString());
 
             if(incidenceInformation == null) {
-                textChannel.sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(incidenceInformation, textChannel, member).queue();
+            getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
             return;
         }
 
         IncidenceInformation incidenceInformation = coronaAPI.getIncidenceCityInformation(stringBuilder.toString());
 
         if(incidenceInformation == null) {
-            textChannel.sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder.toString() + "` gefunden").queue();
+            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder.toString() + "` gefunden").queue();
             return;
         }
 
-        getMessage(incidenceInformation, textChannel, member).queue();
+        getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
     }
 
     private MessageAction getMessage(final IncidenceInformation incidenceInformation, final TextChannel textChannel, final Member member) {
@@ -108,7 +93,7 @@ public class IncidenceCommand extends Command {
 
         botEmbedBuilder.setThumbnail("attachment://" + file.getName());
 
-        return textChannel.sendFile(file, file.getName()).embed(botEmbedBuilder.build());
+        return textChannel.sendFile(file, file.getName()).setEmbeds(botEmbedBuilder.build());
     }
 
 }
