@@ -2,6 +2,7 @@ package de.glaubekeinemdev.coronabot.commands.user;
 
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
+import de.glaubekeinemdev.coronabot.utils.GuildData;
 import de.glaubekeinemdev.coronabot.utils.States;
 import de.glaubekeinemdev.coronabot.utils.objects.CoronaInformation;
 import de.glaubekeinemdev.coronabot.utils.objects.IntensiveBedInformation;
@@ -28,7 +29,7 @@ public class CoronaCommand {
         this.coronaAPI = coronaAPI;
     }
 
-    public void execute(final Message message) {
+    public void execute(final Message message, final GuildData guildData) {
         String[] args = new String[]{};
         String[] messageSplitted = message.getContentRaw().split(" ");
 
@@ -44,11 +45,13 @@ public class CoronaCommand {
             final IntensiveBedInformation intensiveBedInformation = coronaAPI.getIntensiveBedInformation();
 
             if (coronaInformation == null || vaccinationInformation == null || testInformation == null) {
-                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen." +
+                        " Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(coronaInformation, vaccinationInformation, testInformation, intensiveBedInformation, message.getTextChannel(), message.getMember()).queue();
+            getMessage(coronaInformation, vaccinationInformation, testInformation, intensiveBedInformation,
+                    message.getTextChannel(), message.getMember(), guildData).queue();
             return;
         }
 
@@ -63,31 +66,42 @@ public class CoronaCommand {
 
         if (States.getStateCode(stringBuilder.toString()) != null) {
             final CoronaInformation coronaInformation = coronaAPI.getStateInformation(stringBuilder.toString());
-            final VaccinationInformation vaccinationInformation = coronaAPI.getStateVaccinationInformation(stringBuilder.toString());
+            final VaccinationInformation vaccinationInformation =
+                    coronaAPI.getStateVaccinationInformation(stringBuilder.toString());
             if (coronaInformation == null || vaccinationInformation == null) {
-                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. " +
+                        "Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(coronaInformation, vaccinationInformation, null, null, message.getTextChannel(), message.getMember()).queue();
+            getMessage(coronaInformation, vaccinationInformation, null, null,
+                    message.getTextChannel(), message.getMember(), guildData).queue();
             return;
         }
 
         CoronaInformation coronaInformation = coronaAPI.getCityInformation(stringBuilder.toString());
 
         if (coronaInformation == null) {
-            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder + "` gefunden").queue();
+            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `"
+                    + stringBuilder + "` gefunden").queue();
             return;
         }
 
-        getMessage(coronaInformation, null, null, null, message.getTextChannel(), message.getMember()).queue();
+        getMessage(coronaInformation, null, null, null,
+                message.getTextChannel(), message.getMember(), guildData).queue();
     }
 
 
-    private MessageAction getMessage(final CoronaInformation coronaInformation, final VaccinationInformation vaccinationInformation, final TestInformation testInformation, final IntensiveBedInformation intensiveBedInformation, final TextChannel textChannel, final Member member) {
-        final CoronaEmbedBuilder botEmbedBuilder = new CoronaEmbedBuilder("Corona in " + coronaInformation.getName() + " am " + getSimpleDate());
+    private MessageAction getMessage(final CoronaInformation coronaInformation,
+                                     final VaccinationInformation vaccinationInformation,
+                                     final TestInformation testInformation,
+                                     final IntensiveBedInformation intensiveBedInformation,
+                                     final TextChannel textChannel, final Member member, final GuildData guildData) {
+        final CoronaEmbedBuilder botEmbedBuilder = new CoronaEmbedBuilder("Corona in "
+                + coronaInformation.getName() + " am " + getSimpleDate());
 
-        final String runningInfections = decimalFormat.format((coronaInformation.getCases() - (coronaInformation.getRecovered() + coronaInformation.getDeaths())));
+        final String runningInfections = decimalFormat.format((coronaInformation.getCases() -
+                (coronaInformation.getRecovered() + coronaInformation.getDeaths())));
         final String casesLast24Hours = decimalFormat.format(coronaInformation.getCasesLast24Hours());
         final String deaths = decimalFormat.format(coronaInformation.getDeaths());
         final String deathsLast24Hours = decimalFormat.format(coronaInformation.getDeathsLast24Hours());
@@ -100,51 +114,72 @@ public class CoronaCommand {
                         "\uD83C\uDFE5 Genesen: `" + recovered + "` (+" + recoveredLast24Hours + ")\n" +
                         "\n" +
                         "⚠️ Neuinfektionen: `+" + casesLast24Hours + "`\n" +
-                        (coronaInformation.getrValue() == null ? "" : "↘ Reproduktionsfaktor: `" + coronaInformation.getrValue() + "`\n") +
+                        (coronaInformation.getrValue() == null ? "" : "↘ Reproduktionsfaktor: `"
+                                + coronaInformation.getrValue() + "`\n") +
                         "\n" +
                         "\uD83E\uDE84 Inzidenz: `" + decimalFormat.format(coronaInformation.getWeekIncidence()) + "`\n");
 
         if (vaccinationInformation == null) {
-            botEmbedBuilder.addField("Impfstatus:", "Impfinformationen sind für Städte/Landkreise nicht verfügbar");
+            botEmbedBuilder.addField("Impfstatus:",
+                    "Impfinformationen sind für Städte/Landkreise nicht verfügbar");
         } else {
-            final double vaccinatedQuote = vaccinationInformation.getFirstVaccinationInformation().getQuote(); // Quote schon mal 100 hundert
-            final double vaccinatedQuoteLastDay = calculateQuoteLastDay(coronaInformation.getPopulation(), vaccinatedQuote, vaccinationInformation.getFirstVaccinationInformation().getVaccinatedLast24Hours());
+            final double vaccinatedQuote = vaccinationInformation.getFirstVaccinationInformation().getQuote();
+            final double vaccinatedQuoteLastDay = calculateQuoteLastDay(coronaInformation.getPopulation(),
+                    vaccinatedQuote, vaccinationInformation.getFirstVaccinationInformation().getVaccinatedLast24Hours());
             final double fullVaccinatedQuote = vaccinationInformation.getSecondVaccinationInformation().getQuote();
-            final double fullVaccinatedQuoteLastDay = calculateQuoteLastDay(coronaInformation.getPopulation(), fullVaccinatedQuote, vaccinationInformation.getSecondVaccinationInformation().getVaccinatedLast24Hours());
+            final double fullVaccinatedQuoteLastDay = calculateQuoteLastDay(coronaInformation.getPopulation(),
+                    fullVaccinatedQuote,
+                    vaccinationInformation.getSecondVaccinationInformation().getVaccinatedLast24Hours());
             final String vaccinationsLast24Hours = decimalFormat.format(vaccinationInformation.getVaccinatedLast24Hours());
-            final String firstVaccination = decimalFormat.format(vaccinationInformation.getFirstVaccinationInformation().getVaccinatedLast24Hours());
-            final String secondVaccination = decimalFormat.format(vaccinationInformation.getSecondVaccinationInformation().getVaccinatedLast24Hours());
-            final String boosterVaccination = decimalFormat.format(vaccinationInformation.getBoosterVaccinationInformation().getVaccinatedLast24Hours());
+            final String firstVaccination = decimalFormat.format(vaccinationInformation
+                    .getFirstVaccinationInformation().getVaccinatedLast24Hours());
+            final String secondVaccination = decimalFormat.format(vaccinationInformation
+                    .getSecondVaccinationInformation().getVaccinatedLast24Hours());
+            final String boosterVaccination = decimalFormat.format(vaccinationInformation
+                    .getBoosterVaccinationInformation().getVaccinatedLast24Hours());
 
 
             botEmbedBuilder.addField("Impfstatus:",
-                    "✅ Momentan geimpft: `" + vaccinatedQuote + "%` (+" + DoubleRounder.round((vaccinatedQuote - vaccinatedQuoteLastDay), 1) + "%)\n" +
-                            "\uD83D\uDEE1 Davon vollständig: `" + fullVaccinatedQuote + "%` (+" + DoubleRounder.round((fullVaccinatedQuote - fullVaccinatedQuoteLastDay), 1) + "%)\n" +
+                    "✅ Momentan geimpft: `" + vaccinatedQuote +
+                            "%` (+" + DoubleRounder.round((vaccinatedQuote - vaccinatedQuoteLastDay), 1)
+                            + "%)\n" +
+                            "\uD83D\uDEE1 Davon vollständig: `" + fullVaccinatedQuote + "%` (+"
+                            + DoubleRounder.round((fullVaccinatedQuote - fullVaccinatedQuoteLastDay), 1)
+                            + "%)\n" +
                             "\n" +
                             "\uD83D\uDC89 Neue Impfungen: `+" + vaccinationsLast24Hours + "`\n" +
                             "   \uD83D\uDD39 Erstimpfung: `" + firstVaccination + "`\n" +
                             "   \uD83D\uDD39 Zweitimpfung: `" + secondVaccination + "`\n" +
                             "   \uD83D\uDD39 Boosterimpfung: `" + boosterVaccination + "`\n" +
                             "\n" +
-                            (coronaInformation.getName().equals("Deutschland") ? "\uD83D\uDC6A Impfquote bei 85%: `" + coronaAPI.getVaccinationQuoteDay(coronaInformation, vaccinationInformation, 0.85) + "`\n" : ""));
+                            (coronaInformation.getName().equals("Deutschland") ? "\uD83D\uDC6A Impfquote bei 85%: `"
+                                    + coronaAPI.getVaccinationQuoteDay(coronaInformation,
+                                    vaccinationInformation, 0.85) + "`\n" : ""));
         }
 
         if (intensiveBedInformation != null) {
             final int intensiveBeds = intensiveBedInformation.getBedsFree() + intensiveBedInformation.getBedsUsed();
             final String bedsUsed = decimalFormat.format(intensiveBedInformation.getBedsUsed());
             final String bedsFree = decimalFormat.format(intensiveBedInformation.getBedsFree());
-            final double usedBedsQuote = DoubleRounder.round(((((double) intensiveBedInformation.getBedsUsed()) / ((double) intensiveBeds)) * 100.0D), 2);
-            final double covidPatientsQuote = DoubleRounder.round(((((double) intensiveBedInformation.getCovidPatients()) / ((double) intensiveBedInformation.getBedsUsed())) * 100.0D), 2);
+            final double usedBedsQuote = DoubleRounder.round(((((double) intensiveBedInformation.getBedsUsed())
+                    / ((double) intensiveBeds)) * 100.0D), 2);
+            final double covidPatientsQuote = DoubleRounder.round(((((double) intensiveBedInformation.getCovidPatients())
+                    / ((double) intensiveBedInformation.getBedsUsed())) * 100.0D), 2);
             final String covidPatients = decimalFormat.format(intensiveBedInformation.getCovidPatients());
             final String ventilatedPatients = decimalFormat.format(intensiveBedInformation.getCovidPatientsVentilated());
-            final double ventilatedPatientsQuote = DoubleRounder.round(((((double) intensiveBedInformation.getCovidPatientsVentilated()) / ((double) intensiveBedInformation.getCovidPatients())) * 100.0D), 2);
-            final double bedsFreePerLocation = DoubleRounder.round((intensiveBedInformation.getBedsFreePerLocation()), 2);
+            final double ventilatedPatientsQuote = DoubleRounder.round(((((double) intensiveBedInformation
+                    .getCovidPatientsVentilated()) / ((double) intensiveBedInformation.getCovidPatients())) * 100.0D),
+                    2);
+            final double bedsFreePerLocation = DoubleRounder.round((intensiveBedInformation.getBedsFreePerLocation()),
+                    2);
 
             botEmbedBuilder.addField("Auslastung der Intensivstationen:",
-                    "\uD83D\uDECC Belegt: `" + bedsUsed + " / " + decimalFormat.format(intensiveBeds) + "` (" + usedBedsQuote + "% | " + bedsFree + " frei)\n" +
+                    "\uD83D\uDECC Belegt: `" + bedsUsed + " / " + decimalFormat.format(intensiveBeds) +
+                            "` (" + usedBedsQuote + "% | " + bedsFree + " frei)\n" +
                             "\n" +
                             "\uD83E\uDDA0 Davon Corona: `" + covidPatients + "` (" + covidPatientsQuote + "%)\n" +
-                            "   \uD83D\uDD38 Davon beatmet: `" + ventilatedPatients + "` (" + ventilatedPatientsQuote + "%)\n" +
+                            "   \uD83D\uDD38 Davon beatmet: `" + ventilatedPatients +
+                            "` (" + ventilatedPatientsQuote + "%)\n" +
                             "   \uD83D\uDD39 Betten frei pro Standort: `" + bedsFreePerLocation + "`\n");
         }
 
@@ -162,6 +197,7 @@ public class CoronaCommand {
         final File file = coronaAPI.getCoronaMap();
 
         botEmbedBuilder.setDefaultFooter(member);
+        botEmbedBuilder.setColor(guildData.getColor());
 
         if (file == null) {
             return textChannel.sendMessageEmbeds(botEmbedBuilder.build());

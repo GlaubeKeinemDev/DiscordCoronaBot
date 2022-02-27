@@ -64,7 +64,11 @@ public class CoronaAPI {
             lastIncidence = (int) list.get(list.size() - 1).getWeekIncidence();
         }
 
-        return CoronaInformation.parse(jsonObject, lastIncidence, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return CoronaInformation.parse(jsonObject, lastIncidence, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public VaccinationInformation getVaccinationInformation() {
@@ -73,7 +77,11 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return VaccinationInformation.parse((JSONObject) jsonObject.get("data"), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return VaccinationInformation.parse((JSONObject) jsonObject.get("data"), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public CoronaInformation getCityInformation(final String city) {
@@ -96,7 +104,11 @@ public class CoronaAPI {
             lastIncidence = (int) list.get(list.size() - 1).getWeekIncidence();
         }
 
-        return CoronaInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(cityCode), lastIncidence, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return CoronaInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(cityCode), lastIncidence, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public CoronaInformation getStateInformation(final String state) {
@@ -119,8 +131,12 @@ public class CoronaAPI {
             lastIncidence = (int) list.get(list.size() - 1).getWeekIncidence();
         }
 
-        return CoronaInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(stateCode), lastIncidence,
-                formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return CoronaInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(stateCode), lastIncidence,
+                    formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public IncidenceInformation getIncidenceInformation() {
@@ -129,7 +145,11 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return IncidenceInformation.parse(jsonObject, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return IncidenceInformation.parse(jsonObject, formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public IncidenceInformation getIncidenceStateInformation(final String state) {
@@ -143,8 +163,12 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return IncidenceInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(stateCode),
-                formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return IncidenceInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(stateCode),
+                    formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public IncidenceInformation getIncidenceCityInformation(final String city) {
@@ -158,8 +182,12 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return IncidenceInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(cityCode),
-                formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return IncidenceInformation.parse((JSONObject) ((JSONObject) jsonObject.get("data")).get(cityCode),
+                    formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public TestInformation getTestInformation() {
@@ -170,7 +198,11 @@ public class CoronaAPI {
 
         final ArrayList<JSONObject> list = (ArrayList<JSONObject>) ((JSONObject) jsonObject.get("data")).get("history");
 
-        return TestInformation.parse(list.get((list.size() - 1)), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return TestInformation.parse(list.get((list.size() - 1)), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public VaccinationInformation getStateVaccinationInformation(final String state) {
@@ -184,8 +216,12 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return VaccinationInformation.parse((JSONObject) ((JSONObject) ((JSONObject) jsonObject.get("data"))
-                .get("states")).get(stateCode), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        try {
+            return VaccinationInformation.parse((JSONObject) ((JSONObject) ((JSONObject) jsonObject.get("data"))
+                    .get("states")).get(stateCode), formatDate(((JSONObject) jsonObject.get("meta")).get("lastUpdate").toString()));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public int getAverageVaccinationsPerDay() {
@@ -213,7 +249,11 @@ public class CoronaAPI {
         if (jsonObject == null)
             return null;
 
-        return IntensiveBedInformation.parse(jsonObject);
+        try {
+            return IntensiveBedInformation.parse(jsonObject);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public int getPopulation() {

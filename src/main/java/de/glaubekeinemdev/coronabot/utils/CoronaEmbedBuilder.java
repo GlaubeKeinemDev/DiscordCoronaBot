@@ -14,13 +14,11 @@ public class CoronaEmbedBuilder {
 
     public CoronaEmbedBuilder() {
         this.embedBuilder = new EmbedBuilder();
-        embedBuilder.setColor(Color.decode("#900C3F"));
     }
 
     public CoronaEmbedBuilder(final String title) {
         this.embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle(title);
-        embedBuilder.setColor(Color.decode("#900C3F"));
     }
 
     public CoronaEmbedBuilder setTitle(String s) {

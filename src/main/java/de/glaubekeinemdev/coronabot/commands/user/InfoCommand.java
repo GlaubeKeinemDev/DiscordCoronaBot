@@ -2,6 +2,7 @@ package de.glaubekeinemdev.coronabot.commands.user;
 
 import de.glaubekeinemdev.coronabot.CoronaBot;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
+import de.glaubekeinemdev.coronabot.utils.GuildData;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -28,14 +29,16 @@ public class InfoCommand {
         this.decimalFormat = decimalFormat;
     }
 
-    public void execute(final Message message) {
-
+    public void execute(final Message message, final GuildData guildData) {
         final CoronaEmbedBuilder coronaEmbedBuilder = new CoronaEmbedBuilder("Informationen");
 
-        coronaEmbedBuilder.setDescription("Unser Bot gibt dir tagtäglich die aktuellsten Coronazahlen, egal ob deutschlandweit, in deinem Bundesland oder in deinem Stadt-/Landkreis. " +
+        coronaEmbedBuilder.setDescription("Unser Bot gibt dir tagtäglich die aktuellsten Coronazahlen, " +
+                "egal ob deutschlandweit, in deinem Bundesland oder in deinem Stadt-/Landkreis. " +
                 "Dabei versuchen wir dir viele Daten und Vorhersagen trotzdem übersichtlich anzuzeigen.\n\n** **");
-        coronaEmbedBuilder.addField("Datenquellen", "Bei unseren Datenquellen handelt es sich um die Interdisziplinäre Vereinigung für Intensiv- und Notfallmedizin (DIVI) e.V. und das RKI." +
-                "Das DIVI verwenden wir für Daten um die Auslastung der Invensivstationen auszulesen. Das RKI verwenden wir für Neuinfektionen, Inzidenz und Impfzahlen\n\n** **");
+        coronaEmbedBuilder.addField("Datenquellen", "Bei unseren Datenquellen handelt es sich um die " +
+                "Interdisziplinäre Vereinigung für Intensiv- und Notfallmedizin (DIVI) e.V. und das RKI. " +
+                "Das DIVI verwenden wir für Daten um die Auslastung der Invensivstationen auszulesen. " +
+                "Das RKI verwenden wir für Neuinfektionen, Inzidenz und Impfzahlen\n\n** **");
 
         coronaEmbedBuilder.addField("Links",
                 "[• Website](https://covid-bot.de)\n" +
@@ -59,6 +62,7 @@ public class InfoCommand {
             members += guild.getMembers().size();
         }
 
+        coronaEmbedBuilder.setColor(guildData.getColor());
 
         message.getTextChannel().sendMessageEmbeds(coronaEmbedBuilder.build()).queue();
     }
@@ -86,16 +90,16 @@ public class InfoCommand {
 
         String onlineTime = "";
         if (days > 0) {
-            onlineTime += days + " Tage, ";
+            onlineTime += days + (days > 1 ? " Tage, " : " Tag, ");
         }
         if (hours > 0) {
-            onlineTime += hours + " Stunden, ";
+            onlineTime += hours + (hours > 1 ? " Stunden, " : " Stunde, ");
         }
         if (minutes > 0) {
-            onlineTime += minutes + " Minuten";
+            onlineTime += minutes + (minutes > 1 ? " Minuten, " : " Minute, ");
         }
         if (seconds > 0 && days == 0) {
-            onlineTime += ", " + seconds + " Sekunden";
+            onlineTime += ", " + seconds + (seconds > 1 ? " Sekunden, " : " Sekunde, ");
         }
 
         return onlineTime;

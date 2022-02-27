@@ -17,13 +17,13 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -35,12 +35,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 public class CoronaBot {
 
     private static CoronaBot instance;
 
+    private final String defaultColor = "#900C3F";
     private final ConcurrentHashMap<Member, SetupData> guildSetup = new ConcurrentHashMap<>();
 
     private final File configFile;
@@ -144,6 +144,10 @@ public class CoronaBot {
             return germanPopulation.getPopulation();
         }
         return germanPopulation.getPopulation();
+    }
+
+    public String getDefaultColor() {
+        return defaultColor;
     }
 
     public ConcurrentHashMap<Member, SetupData> getGuildSetup() {

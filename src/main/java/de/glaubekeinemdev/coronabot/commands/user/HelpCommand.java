@@ -23,6 +23,8 @@ public class HelpCommand {
                     "**" + guildData.getCommandInvoke() + "setup** - Richte den Bot so ein wie du ihn brauchst.");
         }
 
+        coronaEmbedBuilder.setColor(guildData.getColor());
+
         message.getTextChannel().sendMessageEmbeds(coronaEmbedBuilder.build()).queue();
     }
 

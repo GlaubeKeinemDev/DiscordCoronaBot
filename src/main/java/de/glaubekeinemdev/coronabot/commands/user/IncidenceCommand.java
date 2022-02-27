@@ -2,6 +2,7 @@ package de.glaubekeinemdev.coronabot.commands.user;
 
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
+import de.glaubekeinemdev.coronabot.utils.GuildData;
 import de.glaubekeinemdev.coronabot.utils.States;
 import de.glaubekeinemdev.coronabot.utils.objects.IncidenceInformation;
 import net.dv8tion.jda.api.entities.Member;
@@ -15,14 +16,13 @@ import java.text.DecimalFormat;
 public class IncidenceCommand {
 
     private final CoronaAPI coronaAPI;
-
     private final DecimalFormat decimalFormat = new DecimalFormat("##,###");
 
     public IncidenceCommand(CoronaAPI coronaAPI) {
         this.coronaAPI = coronaAPI;
     }
 
-    public void execute(final Message message) {
+    public void execute(final Message message, final GuildData guildData) {
         String[] args = new String[]{};
         String[] messageSplitted = message.getContentRaw().split(" ");
 
@@ -35,11 +35,12 @@ public class IncidenceCommand {
             final IncidenceInformation incidenceInformation = coronaAPI.getIncidenceInformation();
 
             if(incidenceInformation == null) {
-                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. " +
+                        "Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
+            getMessage(incidenceInformation, message.getTextChannel(), message.getMember(), guildData).queue();
             return;
         }
 
@@ -56,32 +57,38 @@ public class IncidenceCommand {
             IncidenceInformation incidenceInformation = coronaAPI.getIncidenceStateInformation(stringBuilder.toString());
 
             if(incidenceInformation == null) {
-                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. Bitte versuche es später erneut").queue();
+                message.getTextChannel().sendMessage("Es ist ein Fehler unterlaufen. " +
+                        "Bitte versuche es später erneut").queue();
                 return;
             }
 
-            getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
+            getMessage(incidenceInformation, message.getTextChannel(), message.getMember(), guildData).queue();
             return;
         }
 
         IncidenceInformation incidenceInformation = coronaAPI.getIncidenceCityInformation(stringBuilder.toString());
 
         if(incidenceInformation == null) {
-            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland mit dem Namen `" + stringBuilder.toString() + "` gefunden").queue();
+            message.getTextChannel().sendMessage("Es wurde keine Stadt/Landkreis/Gemeinde/Bundesland " +
+                    "mit dem Namen `" + stringBuilder.toString() + "` gefunden").queue();
             return;
         }
 
-        getMessage(incidenceInformation, message.getTextChannel(), message.getMember()).queue();
+        getMessage(incidenceInformation, message.getTextChannel(), message.getMember(), guildData).queue();
     }
 
-    private MessageAction getMessage(final IncidenceInformation incidenceInformation, final TextChannel textChannel, final Member member) {
-        final CoronaEmbedBuilder botEmbedBuilder = new CoronaEmbedBuilder("Inzidenzverlauf von " + incidenceInformation.getName());
+    private MessageAction getMessage(final IncidenceInformation incidenceInformation, final TextChannel textChannel,
+                                     final Member member, final GuildData guildData) {
+        final CoronaEmbedBuilder botEmbedBuilder = new CoronaEmbedBuilder("Inzidenzverlauf von " +
+                incidenceInformation.getName());
 
         final StringBuilder stringBuilder = new StringBuilder();
 
         incidenceInformation.getIncidences().forEach(incidence -> {
-            stringBuilder.append("Inzidenz: `").append(decimalFormat.format(incidence.getWeekIncidence())).append("`\n")
-                    .append("Datum: `").append(coronaAPI.formatDate(incidence.getDate()).split(" ")[0]).append("`\n\n");
+            stringBuilder.append("Inzidenz: `").append(decimalFormat.format(incidence.getWeekIncidence()))
+                    .append("`\n")
+                    .append("Datum: `").append(coronaAPI.formatDate(incidence.getDate()).split(" ")[0])
+                    .append("`\n\n");
         });
 
         botEmbedBuilder.addField("Inzidenzverlauf:", stringBuilder.toString());
@@ -90,6 +97,7 @@ public class IncidenceCommand {
         final File file = coronaAPI.getCoronaMap();
 
         botEmbedBuilder.setDefaultFooter(member);
+        botEmbedBuilder.setColor(guildData.getColor());
 
         botEmbedBuilder.setThumbnail("attachment://" + file.getName());
 

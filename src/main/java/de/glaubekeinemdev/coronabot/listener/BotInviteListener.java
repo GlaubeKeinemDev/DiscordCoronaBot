@@ -1,5 +1,6 @@
 package de.glaubekeinemdev.coronabot.listener;
 
+import de.glaubekeinemdev.coronabot.CoronaBot;
 import de.glaubekeinemdev.coronabot.dailyupdates.DailyUpdateInformation;
 import de.glaubekeinemdev.coronabot.database.BackendHandler;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
@@ -23,7 +24,7 @@ public class BotInviteListener extends ListenerAdapter {
         jda.getGuilds().forEach(eachGuild -> {
             if (backendHandler.getGuildData(eachGuild.getId()) == null) {
                 backendHandler.updateGuildData(eachGuild.getId(), new GuildData(eachGuild.getId(), "!",
-                        new ArrayList<>(), new DailyUpdateInformation()));
+                        new ArrayList<>(), new DailyUpdateInformation(), CoronaBot.getInstance().getDefaultColor()));
 
                 try {
                     eachGuild.getOwner().getUser().openPrivateChannel().queue(privateChannel -> {
@@ -41,7 +42,7 @@ public class BotInviteListener extends ListenerAdapter {
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
         backendHandler.updateGuildData(event.getGuild().getId(), new GuildData(event.getGuild().getId(), "!",
-                new ArrayList<>(), new DailyUpdateInformation()));
+                new ArrayList<>(), new DailyUpdateInformation(), CoronaBot.getInstance().getDefaultColor()));
 
         try {
             event.getGuild().getOwner().getUser().openPrivateChannel().queue(privateChannel -> {
@@ -66,6 +67,8 @@ public class BotInviteListener extends ListenerAdapter {
                         "Command **!setup** zu verwenden, diesen kannst du in einem beliebigen Channel auf deinem Server " +
                         "ausführen (auf den ich Zugriff haben muss). Durch diesen Command kannst du ein paar Feinheiten " +
                         "für deinen Server einstellen.");
+        embedBuilder.addField("Hilfe:",
+                "Solltest du Hilfe zu den Commands benötigen verwende **!help**");
 
         return embedBuilder.build();
     }

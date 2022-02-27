@@ -15,11 +15,13 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,13 +190,41 @@ public class GuildMessageListener extends ListenerAdapter {
                 setupData.getGuildData().setDailyUpdateInformation(dailyUpdateInformation);
 
                 textChannel.sendMessage(member.getAsMention() + " Alles klar. Tägliche Updates wurden konfiguriert." +
-                        " Das Setup ist beendet!").queue();
+                        " Bitte konfiguriere im nächsten Schritt eine Farbe in der die Nachrichten gesendet werden sollen," +
+                        " gebe nur HTML/HEX Farbcodes an, gebe `n` ein um eine Standardfarbe zu verwenden").queue();
+            }
+            if(setupData.getStep() == 7) {
+                final String color;
 
+                if(message.equalsIgnoreCase("n")) {
+                    color = CoronaBot.getInstance().getDefaultColor();
+
+                    textChannel.sendMessage(member.getAsMention() + " Alles klar, die Farbe wurde auf eine " +
+                            "Standardfarbe gesetzt. Das Setup ist beendet.").queue();
+                } else {
+                    if (message.contains("#")) {
+                        color = message;
+                    } else {
+                        color = "#" + message;
+                    }
+
+                    try {
+                        Color.decode(color);
+                    } catch (NumberFormatException e) {
+                        textChannel.sendMessage(member.getAsMention() + " Bitte übergebe eine gültige Farbe (HTML/HEX Color code)").queue();
+                        return;
+                    }
+
+                    textChannel.sendMessage(member.getAsMention() + " Alles klar, die Farbe wurde auf **" + color + "** gesetzt. Das Setup ist beendet.").queue();
+                }
+
+                setupData.getGuildData().setColor(color);
                 backendHandler.updateGuildData(setupData.getGuildData().getId(), setupData.getGuildData());
 
                 CoronaBot.getInstance().getGuildSetup().remove(member);
                 return;
             }
+
             setupData.increaseStep();
             CoronaBot.getInstance().getGuildSetup().put(event.getMember(), setupData);
             return;
@@ -203,7 +233,8 @@ public class GuildMessageListener extends ListenerAdapter {
         GuildData guildData = backendHandler.getGuildData(event.getGuild().getId());
 
         if (guildData == null) {
-            guildData = new GuildData(event.getGuild().getId(), "!", new ArrayList<>(), new DailyUpdateInformation());
+            guildData = new GuildData(event.getGuild().getId(), "!", new ArrayList<>(),
+                    new DailyUpdateInformation(), CoronaBot.getInstance().getDefaultColor());
 
             backendHandler.updateGuildData(event.getGuild().getId(), guildData);
         }
@@ -219,19 +250,22 @@ public class GuildMessageListener extends ListenerAdapter {
         if (!guildData.getAllowedChannels().isEmpty() && !guildData.getAllowedChannels().contains(event.getChannel().getId()))
             return;
 
+        if(event.getMessage().getContentRaw().isEmpty())
+            return;
+
         if (!(Character.toString(event.getMessage().getContentRaw().charAt(0)).equals(guildData.getCommandInvoke())))
             return;
 
         if (command.equalsIgnoreCase("inzidenz")) {
-            incidenceCommand.execute(event.getMessage());
+            incidenceCommand.execute(event.getMessage(), guildData);
             backendHandler.addExecutedCommand();
         }
         if (command.equalsIgnoreCase("corona")) {
-            coronaCommand.execute(event.getMessage());
+            coronaCommand.execute(event.getMessage(), guildData);
             backendHandler.addExecutedCommand();
         }
         if (command.equalsIgnoreCase("info")) {
-            infoCommand.execute(event.getMessage());
+            infoCommand.execute(event.getMessage(), guildData);
             backendHandler.addExecutedCommand();
         }
         if (command.equalsIgnoreCase("help")) {

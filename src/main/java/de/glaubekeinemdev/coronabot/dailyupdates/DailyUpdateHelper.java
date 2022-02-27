@@ -1,5 +1,6 @@
 package de.glaubekeinemdev.coronabot.dailyupdates;
 
+import de.glaubekeinemdev.coronabot.CoronaBot;
 import de.glaubekeinemdev.coronabot.database.BackendHandler;
 import de.glaubekeinemdev.coronabot.utils.CoronaAPI;
 import de.glaubekeinemdev.coronabot.utils.CoronaEmbedBuilder;
@@ -49,7 +50,8 @@ public class DailyUpdateHelper {
                 GuildData guildData = backendHandler.getGuildData(eachGuild.getId());
 
                 if(guildData == null) {
-                    guildData = new GuildData(eachGuild.getId(), "!", new ArrayList<>(), new DailyUpdateInformation());
+                    guildData = new GuildData(eachGuild.getId(), "!", new ArrayList<>(),
+                            new DailyUpdateInformation(), CoronaBot.getInstance().getDefaultColor());
 
                     backendHandler.updateGuildData(eachGuild.getId(), guildData);
                 }
