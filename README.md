@@ -15,6 +15,11 @@ The bot gives data about:
 
 ❓ How to use:
 
+Use the public bot:
+- Go to https://covid-bot.de
+- Just invite the bot to your Discord server
+
+Host it yourself:
 - Go to https://discord.com/developers/applications and create a application
 - Invite the bot to your Discord server
 - Download the project on the releases page
