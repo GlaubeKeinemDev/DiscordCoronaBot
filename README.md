@@ -1,4 +1,4 @@
-# DiscordCoronaBot
+# DiscordCoronaBot *NOTE: This project is outdated and doesn't get support anymore. This repository COULD work but I don't give support. Maybe you have to update the JDA version. Use this repository more like a experimental project and take this as the "Base".*
 Brings German daily updates and forecasts about Covid-19 to your Discord server. With data from the [rki-covid-api](https://api.corona-zahlen.org) by Marlon Lückert and from the [DIVI](https://www.intensivregister.de/#/index). Created with the [JDA-Utilities](https://github.com/GlaubeKeinemDev/JDA-Utilities) library.
 
 The bot gives data about:
@@ -14,12 +14,6 @@ The bot gives data about:
 - 🗺️ Map Overview with all districts and colored incidence numbers
 
 ❓ How to use:
-
-Use the public bot:
-- Go to https://covid-bot.de
-- Just invite the bot to your Discord server
-
-Host it yourself:
 - Go to https://discord.com/developers/applications and create a application
 - Invite the bot to your Discord server
 - Download the project on the releases page
